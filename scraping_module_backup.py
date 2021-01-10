@@ -22,8 +22,7 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now(),
-        "hemispheres" : hemisphere_scrape(browser)
+        "last_modified": dt.datetime.now()
     }
 
     # Stop webdriver and return data
@@ -121,48 +120,7 @@ def mars_facts():
     df.set_index('description', inplace=True)
 
     # Convert dataframe into HTML format, add bootstrap
-    return df.to_html(classes="table table-hover")
-
-def hemisphere_scrape(browser):
-
-    url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
-    browser.visit(url)
-
-    hemisphere_image_urls = []
-
-    title_names =[]
-    image_urls = []
-
-    html = browser.html
-    hemi_soup = soup(html, 'html.parser')
-
-    full_rel_paths = []
-    enhanced_img_urls = []
-
-    div_items = hemi_soup.find_all("div", class_="item")
-    for div_item in div_items:
-        a_class = div_item.find('a')
-        rel_path = a_class['href']
-        full_rel_path = f'https://astrogeology.usgs.gov{rel_path}'
-        full_rel_paths.append(full_rel_path)
-
-    for full_rel_path in full_rel_paths:
-        browser.visit(full_rel_path)
-        html = browser.html
-        enhanced_soup = soup(html, 'html.parser')
-        div_block = enhanced_soup.select('div.downloads a')
-        enhanced_hrefs = [link['href'] for link in div_block]
-        enhanced_img_url = enhanced_hrefs[0]
-        image_urls.append(enhanced_img_url)
-
-    titles_raw = hemi_soup.find_all('h3')
-    for title_raw in titles_raw:
-        title_name = title_raw.get_text().strip()
-        title_names.append(title_name)
-
-    hemisphere_image_urls = [{'image_url':L1, 'title':L2} for (L1,L2) in zip(image_urls, title_names)]
-
-    return hemisphere_image_urls
+    return df.to_html(classes="table table-striped")
 
 if __name__ == "__main__":
     # If running as script, print scraped data
